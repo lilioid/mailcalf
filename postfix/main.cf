@@ -1,0 +1,131 @@
+##############################
+# Important configurations
+#
+
+# what hardcoded domain to receive mail for
+# also see virtual mail config for hosted domains
+mydestination = localhost
+
+# authorized networks from which postfix will just accept any mail
+# this will accept any mail from the same machine (container) but anything else must be otherwise allowed (authenticated)
+mynetworks_style = host
+
+# log to stdout
+maillog_file = /dev/stdout
+
+
+
+
+##############################
+# Virtual mailbox settings
+#
+# deliver mails to dovecot via lmtp (dovecot puts a socket in our runtime directory)
+virtual_transport = lmtp:unix:private/dovecot-lmtp
+
+virtual_mailbox_domains = $myhostname
+
+# http://www.postfix.org/postconf.5.html#virtual_alias_maps
+virtual_alias_maps = hash:/etc/postfix/virtual_alias_maps
+
+# + characters separate an email address localpart and username (user+foo@domain will be delivered as user@domain)
+recipient_delimiter = +
+
+# defer authentication to dovecot (it puts a socket in our runtime directory)
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/dovecot-auth
+
+# virtual alias maps ultimately resolve to the target user for delivery
+# we just use the same logic here to verify that the MAIL FROM address resolves to the authenticated user
+smtpd_sender_login_maps = $virtual_alias_maps
+
+
+
+
+##############################
+# SSL config
+# smtpd_ values are for postfix as a server while smtp_ (without d) are for postfix as a client
+#
+
+# a client may but doesn't have to use tls
+smtpd_tls_security_level = may
+# key and cert files
+smtpd_tls_cert_file = /app/ssl/tls.crt
+smtpd_tls_key_file = /app/ssl/tls.key
+# certificates stored in this directory are trsuted by postfix when it operates as a client
+smtpd_tls_CApath = /etc/ssl/certs
+
+# postfix will prefer to use tls but doesn't require it
+smtp_tls_security_level = may
+
+# only allow authentication over tls connections
+smtpd_tls_auth_only = yes
+
+
+
+
+##############################
+# Relay restrictions and access control
+#
+smtpd_helo_required = yes
+smtpd_helo_restrictions = permit_sasl_authenticated, reject_invalid_helo_hostname, reject_unknown_helo_hostname
+smtpd_sender_restrictions = permit_sasl_authenticated, reject_unknown_sender_domain
+smtpd_recipient_restrictions =
+smtpd_relay_restrictions = permit_sasl_authenticated, reject
+smtpd_data_restrictions = reject_unauth_pipelining
+
+# should be
+#smtpd_recipient_restrictions = reject_unlisted_recipient,
+#smtpd_relay_restrictions = reject_unknown_recipient_domain, permit_sasl_authenticated, reject
+
+# request sender reputation via dns block lists
+postscreen_dnsbl_action = enforce
+postscreen_dnsbl_threshold = 6
+postscreen_dnsbl_sites = wl.mailspike.net=127.0.0.[18;19;20]*-2
+  hostkarma.junkemailfilter.com=127.0.0.1*-2
+  list.dnswl.org=127.0.[0..255].0*-2
+  list.dnswl.org=127.0.[0..255].1*-4
+  list.dnswl.org=127.0.[0..255].2*-6
+  list.dnswl.org=127.0.[0..255].3*-8
+  ix.dnsbl.manitu.net*2
+  bl.spamcop.net*2
+  bl.suomispam.net*2
+  hostkarma.junkemailfilter.com=127.0.0.2*3
+  hostkarma.junkemailfilter.com=127.0.0.4*2
+  hostkarma.junkemailfilter.com=127.0.1.2*1
+  backscatter.spameatingmonkey.net*2
+  bl.ipv6.spameatingmonkey.net*2
+  bl.spameatingmonkey.net*2
+  b.barracudacentral.org=127.0.0.2*7
+  bl.mailspike.net=127.0.0.2*5
+  bl.mailspike.net=127.0.0.[10;11;12]*4
+  dnsbl.sorbs.net=127.0.0.10*8
+  dnsbl.sorbs.net=127.0.0.5*6
+  dnsbl.sorbs.net=127.0.0.7*3
+  dnsbl.sorbs.net=127.0.0.8*2
+  dnsbl.sorbs.net=127.0.0.6*2
+  dnsbl.sorbs.net=127.0.0.9*2
+  zen.spamhaus.org=127.0.0.[10;11]*8
+  zen.spamhaus.org=127.0.0.[4..7]*6
+  zen.spamhaus.org=127.0.0.3*4
+  zen.spamhaus.org=127.0.0.2*3
+
+# use hardcoded whitelist for known-reputable ip addresses
+postscreen_access_list = permit_mynetworks,
+    cidr:/etc/postfix/postscreen_whitelist.cidr
+
+# pass messages to rspamd for further analysis
+smtpd_milters = inet:127.0.0.1:11332
+milter_default_action = accept
+
+
+
+
+##############################
+# Postfix internals
+#
+compatibility_level = 3
+smtp_dns_support_level = dnssec
+smtpd_sasl_authenticated_header = yes
+mail_name = Postmaennchen
+
+

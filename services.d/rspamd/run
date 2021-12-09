@@ -1,0 +1,2 @@
+#!/usr/bin/execlineb -P
+rspamd -c /etc/rspamd/rspamd.conf -f --insecure
