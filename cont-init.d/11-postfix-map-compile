@@ -1,5 +1,6 @@
 #!/bin/sh
 set -e
+
 PROG=$(basename $0)
 
 for i in "virtual_alias_maps"; do
