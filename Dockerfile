@@ -24,6 +24,8 @@ COPY base64.lua /usr/share/lua/5.3/
 # configure container
 COPY services.d /etc/services.d/
 COPY cont-init.d /etc/cont-init.d/
+COPY fix-attrs.d /etc/fix-attrs.d/
+RUN chmod +x /etc/services.d/*/* /etc/cont-init.d/*
 COPY dovecot /etc/dovecot/
 COPY postfix /etc/postfix/
 COPY rspamd /etc/rspamd/
