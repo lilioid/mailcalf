@@ -66,16 +66,24 @@ smtpd_tls_auth_only = yes
 ##############################
 # Relay restrictions and access control
 #
+
+# require that client IP address has a reverse dns record which again points to the same client ip
+# bypass for authenticated users
+smtpd_client_restrictions = permit_sasl_authenticated, reject_unknown_client_hostname
+
+# require that helo hostnames are correctly formatted and resolvable
+# bypass for authenticated users
 smtpd_helo_required = yes
 smtpd_helo_restrictions = permit_sasl_authenticated, reject_invalid_helo_hostname, reject_unknown_helo_hostname
-smtpd_sender_restrictions = permit_sasl_authenticated, reject_unknown_sender_domain
-smtpd_recipient_restrictions =
-smtpd_relay_restrictions = permit_sasl_authenticated, reject
-smtpd_data_restrictions = reject_unauth_pipelining
 
-# should be
-#smtpd_recipient_restrictions = reject_unlisted_recipient,
-#smtpd_relay_restrictions = reject_unknown_recipient_domain, permit_sasl_authenticated, reject
+# require that the sender domain has an A or valid MX record
+smtpd_sender_restrictions = reject_unknown_sender_domain
+
+# require that the destination is on this server or the user is authenticated
+smtpd_recipient_restrictions = permit_sasl_authenticated, reject_unauth_destination
+
+# require authentication to use smtp pipelining
+smtpd_data_restrictions = reject_unauth_pipelining
 
 # request sender reputation via dns block lists
 postscreen_dnsbl_action = enforce
@@ -109,7 +117,7 @@ postscreen_dnsbl_sites = wl.mailspike.net=127.0.0.[18;19;20]*-2
   zen.spamhaus.org=127.0.0.3*4
   zen.spamhaus.org=127.0.0.2*3
 
-# use hardcoded whitelist for known-reputable ip addresses
+# use hardcoded whitelist for known-reputable ip addresses in postscreen
 postscreen_access_list = permit_mynetworks,
     cidr:/etc/postfix/postscreen_whitelist.cidr
 
