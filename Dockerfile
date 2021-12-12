@@ -27,6 +27,8 @@ COPY cont-init.d /etc/cont-init.d/
 COPY fix-attrs.d /etc/fix-attrs.d/
 RUN chmod +x /etc/services.d/*/* /etc/cont-init.d/*
 COPY dovecot /etc/dovecot/
+RUN chmod +x /etc/dovecot/sieve_extprograms/*
+RUN find /etc/dovecot/sieve -name \*.sieve -exec sievec {} \;
 COPY postfix /etc/postfix/
 COPY rspamd /etc/rspamd/
 
