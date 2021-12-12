@@ -35,6 +35,11 @@ This mailserver accepts the following configurations
 
   For mails to be correctly deliverable, all aliases should finally resolve to a keycloak username.
 
+- `/app/conf/postfix_virtual_domains.txt`
+  A berkeley db table which lists domains for which this server accepts mails.
+
+  The right-hand side of the table is completely ignored and can be anything.
+
 - `/app/conf/rspamd_worker_controller.inc`
   Incrementally applied configuration file for *rspamd*.
 
