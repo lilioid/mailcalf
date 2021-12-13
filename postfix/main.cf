@@ -37,7 +37,7 @@ smtpd_sasl_path = private/dovecot-auth
 
 # virtual alias maps ultimately resolve to the target user for delivery
 # we just use the same logic here to verify that the MAIL FROM address resolves to the authenticated user
-smtpd_sender_login_maps = $virtual_alias_maps
+smtpd_sender_login_maps = hash:/etc/postfix/sender_login_maps
 
 
 
@@ -78,7 +78,7 @@ smtpd_helo_required = yes
 smtpd_helo_restrictions = permit_sasl_authenticated, reject_invalid_helo_hostname, reject_unknown_helo_hostname
 
 # require that the sender domain has an A or valid MX record
-smtpd_sender_restrictions = reject_unknown_sender_domain
+smtpd_sender_restrictions = reject_unknown_sender_domain, reject_authenticated_sender_login_mismatch
 
 # require that the destination is on this server or the user is authenticated
 smtpd_recipient_restrictions = permit_sasl_authenticated, reject_unauth_destination

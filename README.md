@@ -40,6 +40,11 @@ This mailserver accepts the following configurations
 
   The right-hand side of the table is completely ignored and can be anything.
 
+- `/app/conf/postfix_sender_login_maps.txt`
+  A lookup table that specifies which user is allowed to send from which address.
+
+  [Postfix Documentation](http://www.postfix.org/postconf.5.html#smtpd_sender_login_maps)
+
 - `/app/conf/rspamd_worker_controller.inc`
   Incrementally applied configuration file for *rspamd*.
 
