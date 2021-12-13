@@ -1,2 +1,6 @@
 #!/usr/bin/execlineb -P
+
+# this is necessary because otherwise dovecot fails with some weird "failed to dump capabilities error"
+foreground { sleep 1 }
+
 dovecot -F
