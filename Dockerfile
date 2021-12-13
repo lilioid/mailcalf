@@ -14,11 +14,12 @@ RUN apt-get update &&\
       dovecot-core dovecot-imapd dovecot-lmtpd dovecot-sieve dovecot-managesieved dovecot-auth-lua \
       lua-http lua-json  \
       redis-server \
-      rspamd && \
+      rspamd \
+      opendkim opendkim-tools && \
     ln -s /usr/share/lua/5.2/lpeg_patterns/ /usr/share/lua/5.3/lpeg_patterns && \
     ln -s /usr/share/lua/5.2/basexx.lua /usr/share/lua/5.3/basexx.lua && \
     ln -s /usr/share/lua/5.2/fifo.lua /usr/share/lua/5.3/fifo.lua && \
-    rm -rf /var/lib/apt/lists/* /etc/dovecot
+    rm -rf /var/lib/apt/lists/* /etc/dovecot /etc/opendkim.conf
 COPY base64.lua /usr/share/lua/5.3/
 
 # configure container
@@ -31,6 +32,7 @@ RUN chmod +x /etc/dovecot/sieve_extprograms/*
 RUN find /etc/dovecot/sieve -name \*.sieve -exec sievec {} \;
 COPY postfix /etc/postfix/
 COPY rspamd /etc/rspamd/
+COPY opendkim/ /etc/opendkim
 
 # configure image metadata
 # smtp

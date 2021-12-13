@@ -65,7 +65,7 @@ smtpd_tls_auth_only = yes
 
 
 ##############################
-# Relay restrictions and access control
+# Restrictions and access control
 #
 
 # require that client IP address has a reverse dns record which again points to the same client ip
@@ -122,9 +122,19 @@ postscreen_dnsbl_sites = wl.mailspike.net=127.0.0.[18;19;20]*-2
 postscreen_access_list = permit_mynetworks,
     cidr:/etc/postfix/postscreen_whitelist.cidr
 
-# pass messages to rspamd for further analysis
-smtpd_milters = inet:127.0.0.1:11332
+
+
+
+##############################
+# Milters (mail filters)
+#
+
+# pass incoming messages to rspamd (port 11332) and opendkim (port 8891)
+smtpd_milters = inet:127.0.0.1:11332 inet:127.0.0.1:8891
 milter_default_action = accept
+
+# pass all other messages to opendkim for signing
+non_smtpd_milters=inet:127.0.0.1:8891
 
 
 

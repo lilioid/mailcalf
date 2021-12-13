@@ -1,0 +1,2 @@
+#!/usr/bin/execlineb -P
+opendkim -f -x /etc/opendkim/opendkim.conf

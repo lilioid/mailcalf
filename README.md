@@ -48,4 +48,10 @@ This mailserver accepts the following configurations
   password = "$2$z4y5epzqj6jxzrkxca4wb4tszfnhmtcs$39tgkjx95srtw4mu9ey5fcxrn6yq4wsqy5z4eqxwijzbas9kq7wb";
   ``` 
 
+- `/app/conf/opendkim_domains.txt`
+  A file listing the domains which will be dkim signed.
+
+- `/app/conf/opendkim_key.pem`
+  The private key with which dkim signatures will be made.
+
 - `/app/ssl/tls.crt` and `/app/ssl/tls.key` for TLS encryption.
