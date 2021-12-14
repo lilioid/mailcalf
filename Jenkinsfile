@@ -35,6 +35,18 @@ pipeline {
                 }
             }
         }
+        stage("Deploy") {
+            steps {
+                container("podman") {
+                    script {
+                        imageDigest = fetchImageDigest(imageName, "registry.finn-thorben.me", "registry-credentials")
+                    }
+                }
+                container("kustomize") {
+                    deployContainer("mailserver", imageName, imageDigest)
+                }
+            }
+        }
     }
 }
 
