@@ -18,13 +18,11 @@ smtp      unix  n       -       n       -       -       smtpd
 
 # end-user submission service (port 587/tcp
 # overwrite tls setting to enforce encryption and enable authentication
-# also overwrite milters to skip rspamd
 submission inet n       -       n       -       -       smtpd
   -o syslog_name=postfix/submission
   -o smtpd_tls_security_level=encrypt
   -o smtpd_sasl_auth_enable=yes
   -o smtpd_reject_unlisted_recipient=no
-  -o smtpd_milters=inet:127.0.0.1:8891
 
 # postfix-as-smtp-client services
 smtp      unix  -       -       n       -       -       smtp

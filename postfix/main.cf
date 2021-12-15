@@ -129,12 +129,10 @@ postscreen_access_list = permit_mynetworks,
 # Milters (mail filters)
 #
 
-# pass incoming messages to rspamd (port 11332) and opendkim (port 8891)
+# pass all messages to rspamd (port 11332) and opendkim (port 8891)
 smtpd_milters = inet:127.0.0.1:11332 inet:127.0.0.1:8891
 milter_default_action = accept
-
-# pass all other messages to opendkim for signing
-non_smtpd_milters=inet:127.0.0.1:8891
+non_smtpd_milters=$smtpd_milters
 
 
 
