@@ -18,8 +18,8 @@ local function do_keycloak_direct_auth(auth_request, username, password)
     -- construct request
     local request = http_request.new_from_uri(KEYCLOAK_URL .. "/auth/realms/" .. KEYCLOAK_REALM .. "/protocol/openid-connect/token")
     request.headers:upsert(":method", "POST")
-    request.headers:upsert("Content-Type", "application/x-www-form-urlencoded")
-    request.headers:upsert("Accept", "application/json")
+    request.headers:upsert("content-type", "application/x-www-form-urlencoded")
+    request.headers:upsert("accept", "application/json")
     request:set_body("grant_type=password&client_id=" .. KEYCLOAK_CLIENT_ID .. "&client_secret=" .. KEYCLOAK_CLIENT_SECRET .. "&username=" .. username .. "&password=" .. password .. "&scope=profile")
 
     -- execute
@@ -39,9 +39,9 @@ local function do_keycloak_sa_auth()
     -- construct request
     local request = http_request.new_from_uri(KEYCLOAK_URL .. "/auth/realms/" .. KEYCLOAK_REALM .. "/protocol/openid-connect/token")
     request.headers:upsert(":method", "POST")
-    request.headers:upsert("Content-Type", "application/x-www-form-urlencoded")
-    request.headers:upsert("Accept", "application/json")
-    request.headers:upsert("Authorization", "Basic " .. base64.encode(KEYCLOAK_CLIENT_ID .. ":" .. KEYCLOAK_CLIENT_SECRET))
+    request.headers:upsert("content-type", "application/x-www-form-urlencoded")
+    request.headers:upsert("accept", "application/json")
+    request.headers:upsert("authorization", "Basic " .. base64.encode(KEYCLOAK_CLIENT_ID .. ":" .. KEYCLOAK_CLIENT_SECRET))
     request:set_body("grant_type=client_credentials")
 
     -- execute
@@ -60,8 +60,8 @@ end
 local function do_keycloak_userinfo_request(auth_request, access_token)
     -- construct request
     local request = http_request.new_from_uri(KEYCLOAK_URL .. "/auth/realms/" .. KEYCLOAK_REALM .. "/protocol/openid-connect/userinfo")
-    request.headers:upsert("Accept", "application/json")
-    request.headers:upsert("Authorization", "Bearer " .. access_token)
+    request.headers:upsert("accept", "application/json")
+    request.headers:upsert("authorization", "Bearer " .. access_token)
 
     -- execute
     local response_headers, response = assert(request:go(5))
@@ -78,8 +78,8 @@ end
 local function do_keycloak_get_users_request(access_token)
     -- construct request
     local request = http_request.new_from_uri(KEYCLOAK_URL .. "/auth/admin/realms/" .. KEYCLOAK_REALM .. "/users")
-    request.headers:upsert("Accept", "application/json")
-    request.headers:upsert("Authorization", "Bearer " .. access_token)
+    request.headers:upsert("accept", "application/json")
+    request.headers:upsert("authorization", "Bearer " .. access_token)
 
     -- execute
     local response_headers, response = assert(request:go(5))
