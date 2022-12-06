@@ -16,7 +16,7 @@ Utility functions and implementation details
 --- Do direct auth against keycloak and return an access token (if successful) or nil (if not)
 local function do_keycloak_direct_auth(auth_request, username, password)
     -- construct request
-    local request = http_request.new_from_uri(KEYCLOAK_URL .. "/auth/realms/" .. KEYCLOAK_REALM .. "/protocol/openid-connect/token")
+    local request = http_request.new_from_uri(KEYCLOAK_URL .. "/realms/" .. KEYCLOAK_REALM .. "/protocol/openid-connect/token")
     request.headers:upsert(":method", "POST")
     request.headers:upsert("content-type", "application/x-www-form-urlencoded")
     request.headers:upsert("accept", "application/json")
@@ -37,7 +37,7 @@ end
 --- Do service account authentication against keycloak and return an access token
 local function do_keycloak_sa_auth()
     -- construct request
-    local request = http_request.new_from_uri(KEYCLOAK_URL .. "/auth/realms/" .. KEYCLOAK_REALM .. "/protocol/openid-connect/token")
+    local request = http_request.new_from_uri(KEYCLOAK_URL .. "/realms/" .. KEYCLOAK_REALM .. "/protocol/openid-connect/token")
     request.headers:upsert(":method", "POST")
     request.headers:upsert("content-type", "application/x-www-form-urlencoded")
     request.headers:upsert("accept", "application/json")
@@ -59,7 +59,7 @@ end
 --- Do a request to the userinfo endpoint to retrieve and identity token from keycloak. Returns a parsed identity token or nil
 local function do_keycloak_userinfo_request(auth_request, access_token)
     -- construct request
-    local request = http_request.new_from_uri(KEYCLOAK_URL .. "/auth/realms/" .. KEYCLOAK_REALM .. "/protocol/openid-connect/userinfo")
+    local request = http_request.new_from_uri(KEYCLOAK_URL .. "/realms/" .. KEYCLOAK_REALM .. "/protocol/openid-connect/userinfo")
     request.headers:upsert("accept", "application/json")
     request.headers:upsert("authorization", "Bearer " .. access_token)
 
