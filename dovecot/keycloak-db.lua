@@ -20,7 +20,7 @@ local function do_keycloak_direct_auth(auth_request, username, password)
     request.headers:upsert(":method", "POST")
     request.headers:upsert("content-type", "application/x-www-form-urlencoded")
     request.headers:upsert("accept", "application/json")
-    request:set_body("grant_type=password&client_id=" .. KEYCLOAK_CLIENT_ID .. "&client_secret=" .. KEYCLOAK_CLIENT_SECRET .. "&username=" .. username .. "&password=" .. password .. "&scope=openid+profile")
+    request:set_body("grant_type=password&client_id=" .. KEYCLOAK_CLIENT_ID .. "&client_secret=" .. KEYCLOAK_CLIENT_SECRET .. "&username=" .. username .. "&password=" .. password .. "&scope=openid+profile+email")
 
     -- execute
     local response_headers, response = assert(request:go(5))
@@ -77,7 +77,7 @@ end
 --- Do a request to keycloak's admin API to fetch all users
 local function do_keycloak_get_users_request(access_token)
     -- construct request
-    local request = http_request.new_from_uri(KEYCLOAK_URL .. "/auth/admin/realms/" .. KEYCLOAK_REALM .. "/users")
+    local request = http_request.new_from_uri(KEYCLOAK_URL .. "/admin/realms/" .. KEYCLOAK_REALM .. "/users")
     request.headers:upsert("accept", "application/json")
     request.headers:upsert("authorization", "Bearer " .. access_token)
 
