@@ -20,7 +20,7 @@ local function do_keycloak_direct_auth(auth_request, username, password)
     request.headers:upsert(":method", "POST")
     request.headers:upsert("content-type", "application/x-www-form-urlencoded")
     request.headers:upsert("accept", "application/json")
-    request:set_body("grant_type=password&client_id=" .. KEYCLOAK_CLIENT_ID .. "&client_secret=" .. KEYCLOAK_CLIENT_SECRET .. "&username=" .. username .. "&password=" .. password .. "&scope=profile")
+    request:set_body("grant_type=password&client_id=" .. KEYCLOAK_CLIENT_ID .. "&client_secret=" .. KEYCLOAK_CLIENT_SECRET .. "&username=" .. username .. "&password=" .. password .. "&scope=openid+profile")
 
     -- execute
     local response_headers, response = assert(request:go(5))
