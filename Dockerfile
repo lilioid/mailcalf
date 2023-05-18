@@ -11,16 +11,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update &&\
     apt-get install -y --no-install-recommends ca-certificates \
       postfix \
-      dovecot-core dovecot-imapd dovecot-lmtpd dovecot-sieve dovecot-managesieved dovecot-auth-lua \
-      lua-http lua-json  \
+      dovecot-core dovecot-imapd dovecot-lmtpd dovecot-sieve dovecot-managesieved \
       redis-server \
       rspamd \
       opendkim opendkim-tools && \
-    ln -s /usr/share/lua/5.2/lpeg_patterns/ /usr/share/lua/5.3/lpeg_patterns && \
-    ln -s /usr/share/lua/5.2/basexx.lua /usr/share/lua/5.3/basexx.lua && \
-    ln -s /usr/share/lua/5.2/fifo.lua /usr/share/lua/5.3/fifo.lua && \
     rm -rf /var/lib/apt/lists/* /etc/dovecot /etc/opendkim.conf
-COPY base64.lua /usr/share/lua/5.3/
 
 # configure container
 COPY services.d /etc/services.d/

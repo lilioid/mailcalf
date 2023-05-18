@@ -1,4 +1,4 @@
 userdb {
-    driver = lua
-    args = file=/etc/dovecot/keycloak-db.lua
+    driver = static
+    args =
 }

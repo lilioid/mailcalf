@@ -1,4 +1,5 @@
 passdb {
-    driver = lua
-    args = file=/etc/dovecot/keycloak-db.lua
+    driver = oauth2
+    mechanisms = plain login
+    args = /app/conf/dovecot-oauth2.conf.ext
 }
