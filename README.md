@@ -65,3 +65,8 @@ This mailserver accepts the following configurations
   The private key with which dkim signatures will be made.
 
 - `/app/ssl/tls.crt` and `/app/ssl/tls.key` for TLS encryption.
+
+- `/app/conf/dovecot-extra.passwd` for extra users in addition to OAuth2 login.
+
+  The format is `<username>:<password>` where the password is encrypted.
+  An encryption with the configured format can be done using the `doveadm pw` CLI utility.

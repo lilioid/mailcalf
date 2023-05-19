@@ -3,3 +3,9 @@ passdb {
     mechanisms = plain login
     args = /app/conf/dovecot-oauth2.conf.ext
 }
+
+passdb {
+  driver = passwd-file
+  args = /app/conf/dovecot-extra.passwd
+  skip = authenticated
+}
