@@ -1,2 +1,0 @@
-#!/usr/bin/execlineb -P
-redis-server /etc/rspamd/redis_server.conf

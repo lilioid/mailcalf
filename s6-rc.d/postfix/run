@@ -1,0 +1,6 @@
+#!/command/execlineb -P
+
+foreground { ./data/include_local_postfix_conf.sh }
+foreground { ./data/compile_postfix_maps.sh }
+
+postfix start-fg

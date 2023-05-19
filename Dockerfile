@@ -1,11 +1,5 @@
 FROM docker.io/debian:11-slim
 
-# install s6 init system
-ARG S6_VERSION="v2.2.0.1"
-ADD https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64-installer /tmp/
-RUN chmod +x /tmp/s6-overlay-amd64-installer && /tmp/s6-overlay-amd64-installer /
-ENTRYPOINT ["/init"]
-
 # install required software
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update &&\
@@ -14,14 +8,21 @@ RUN apt-get update &&\
       dovecot-core dovecot-imapd dovecot-lmtpd dovecot-sieve dovecot-managesieved \
       redis-server \
       rspamd \
-      opendkim opendkim-tools && \
+      opendkim opendkim-tools \
+      xz-utils && \
     rm -rf /var/lib/apt/lists/* /etc/dovecot /etc/opendkim.conf
 
+# install s6 init system
+ARG S6_VERSION="v3.1.5.0"
+ADD https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-noarch.tar.xz /tmp
+RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz
+ADD https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-x86_64.tar.xz /tmp
+RUN tar -C / -Jxpf /tmp/s6-overlay-x86_64.tar.xz
+ENTRYPOINT ["/init"]
+
 # configure container
-COPY services.d /etc/services.d/
-COPY cont-init.d /etc/cont-init.d/
-COPY fix-attrs.d /etc/fix-attrs.d/
-RUN chmod +x /etc/services.d/*/* /etc/cont-init.d/*
+COPY s6-rc.d /etc/s6-overlay/s6-rc.d
+RUN rm -r /etc/s6-overlay/s6-rc.d/user/contents.d
 COPY dovecot /etc/dovecot/
 RUN chmod +x /etc/dovecot/sieve_extprograms/*
 RUN find /etc/dovecot/sieve -name \*.sieve -exec sievec {} \;
@@ -42,4 +43,3 @@ VOLUME /app/conf
 VOLUME /app/ssl
 VOLUME /app/mail
 VOLUME /app/data
-CMD ["cat", "-"]

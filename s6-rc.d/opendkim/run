@@ -1,0 +1,5 @@
+#!/command/execlineb -P
+
+foreground { ./data/copy_opendkim_conf.sh }
+
+opendkim -f -x /etc/opendkim/opendkim.conf

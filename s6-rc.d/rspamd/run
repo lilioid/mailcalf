@@ -1,0 +1,6 @@
+#!/command/execlineb -P
+
+foreground { ln -s /app/conf/rspamd_worker_controller.inc /etc/rspamd/override.d/worker-controller.inc }
+foreground { mkdir -p /app/data/rspamd/redis }
+
+redis-server /etc/rspamd/redis_server.conf
