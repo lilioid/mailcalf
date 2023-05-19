@@ -11,17 +11,22 @@ This mailserver accepts the following configurations
     - [Postfix Documentation Reference](http://www.postfix.org/documentation.html)
     - [All main.cf parameters](http://www.postfix.org/postconf.5.html)
 
-- `/app/conf/keycloak_auth.json`
-  A json file which is used to configure Keycloack authentication for dovecot.
+- `/app/conf/dovecot-oauth2.conf.ext`
+  A json file which is used to configure Oauth2 password grant authentication.
 
-  The expected structure looks like this:
-  ```json
-  {
-    "keycloak_url": "https://keycloak.finn-thorben.me",
-    "keycloak_realm": "sharedsrv",
-    "keycloak_client_id": "mailserver",
-    "keycloak_client_secret": "<secret>"
-  }
+  Using this mechanism, it is possible to authenticate users via the SMTP/IMAP `PLAIN` or `LOGIN` schemes by passing
+  the password through to an oauth server supporting direct access grant.
+
+  The expected structure looks like this the following but more parameters are described in the [Dovecot Oauth2 documentation](https://doc.dovecot.org/configuration_manual/authentication/oauth2/):
+  ```
+  debug = no
+  grant_url = <the token endpoint>
+  introspection_url = <the token introspection endpoint>
+  client_id = <oauth2 client id>
+  client_secret = <oauth2 client secret>
+  introspection_mode = post
+  use_grant_password = yes
+  username_attribute = preferred_username
   ```
 
   The corresponding client configuration in keycloak needs to have *Direct Access Grants* and *Service Accounts*
