@@ -70,3 +70,5 @@ This mailserver accepts the following configurations
 
   The format is `<username>:<password>` where the password is encrypted.
   An encryption with the configured format can be done using the `doveadm pw` CLI utility.
+
+- `/app/conf/fetchmailrc` for configuring fetchmail.

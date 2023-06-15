@@ -9,6 +9,7 @@ RUN apt-get update &&\
       redis-server \
       rspamd \
       opendkim opendkim-tools \
+      fetchmail \
       xz-utils && \
     rm -rf /var/lib/apt/lists/* /etc/dovecot /etc/opendkim.conf
 

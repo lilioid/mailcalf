@@ -3,3 +3,4 @@ dovecot
 opendkim
 rspamd
 rspamd_redis
+fetchmail

@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+
+chmod 400 /app/conf/fetchmailrc
+
+# run fetchmail and configure it to deliver mail directly to dovecot via lmtp
+exec fetchmail \
+    --daemon 300 \
+    --nodetach \
+    --nobounce \
+    --antispam 554 \
+    --smtphost /var/run/dovecot/lmtp \
+    -f /app/conf/fetchmailrc
