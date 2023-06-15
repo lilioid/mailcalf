@@ -71,4 +71,14 @@ This mailserver accepts the following configurations
   The format is `<username>:<password>` where the password is encrypted.
   An encryption with the configured format can be done using the `doveadm pw` CLI utility.
 
-- `/app/conf/fetchmailrc` for configuring fetchmail.
+- `/app/conf/fetchmailrc` for configuring fetchmail. See the 
+  [documentation](https://www.fetchmail.info/fetchmail-man.html#keyword-option-summary) for the syntax of this file.
+
+  Delivery options can be ignored in the config file as they are set as command line arguments to fetchmail by the 
+  container (see the [launch script](./s6-rc.d/fetchmail/run) for details). 
+
+  The file could for example look like this:
+  ```
+  poll imap.mydomain.de protocol IMAP auth password
+    user "ftsell" with password "…" is "ftsell" here
+  ```
