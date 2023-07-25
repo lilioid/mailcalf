@@ -3,11 +3,12 @@ set -e
 
 chmod 400 /app/conf/fetchmailrc
 
-# run fetchmail and configure it to deliver mail directly to dovecot via lmtp
+# run fetchmail and configure it to deliver mail to postfix via smtp
+# this does not need to be authenticated because postfix implicitly trusts connections from localhost
 exec fetchmail \
     --daemon 300 \
     --nodetach \
     --nobounce \
     --antispam 554 \
-    --smtphost /var/run/dovecot/lmtp \
+    --smtphost localhost/25 \
     -f /app/conf/fetchmailrc
