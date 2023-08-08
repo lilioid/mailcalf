@@ -1,2 +1,7 @@
-#!/command/execlineb -P
-rspamd -c /etc/rspamd/rspamd.conf -f --insecure
+#!/bin/bash
+set -e
+
+ln -s /app/conf/rspamd_worker_controller.inc /etc/rspamd/override.d/worker-controller.inc
+mkdir -p /app/data/rspamd/redis
+
+exec redis-server /etc/rspamd/redis_server.conf
