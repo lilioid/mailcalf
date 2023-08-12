@@ -75,7 +75,7 @@ smtpd_client_restrictions = permit_sasl_authenticated, reject_unknown_client_hos
 # require that helo hostnames are correctly formatted and resolvable
 # bypass for authenticated users
 smtpd_helo_required = yes
-smtpd_helo_restrictions = permit_sasl_authenticated, reject_invalid_helo_hostname, reject_unknown_helo_hostname
+smtpd_helo_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_invalid_helo_hostname, reject_unknown_helo_hostname
 
 # require that the sender domain has an A or valid MX record
 smtpd_sender_restrictions = reject_unknown_sender_domain, reject_authenticated_sender_login_mismatch
