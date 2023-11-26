@@ -3,18 +3,6 @@ defmodule Mailcalf.Dovecot.Process do
   Management of the external postgres process
   """
   require Logger
-  use GenServer
-
-  @impl true
-  def init(_args) do
-    port = start_dovecot()
-    {:ok, [port: port]}
-  end
-
-  @impl true
-  def terminate(_reason, [port: port]) do
-    stop_dovecot(port)
-  end
 
   @spec start_dovecot() :: port()
   def start_dovecot() do

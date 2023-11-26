@@ -1,0 +1,508 @@
+<% require Logger %>
+
+## Dovecot configuration file
+# See https://doc.dovecot.org/
+
+# "doveconf -n" command gives a clean output of the changed settings. Use it
+# instead of copy&pasting files when posting to the Dovecot mailing list.
+
+auth_debug = no
+
+# Space separated list of trusted network ranges. Connections from these
+# IPs are allowed to override their IP addresses and ports (for logging and
+# for authentication checks). disable_plaintext_auth is also ignored for
+# these networks. Typically you'd specify your IMAP proxy servers here.
+login_trusted_networks =
+
+# Show more verbose process titles (in ps). Currently shows user name and
+# IP address. Useful for seeing who are actually using the IMAP processes
+# (eg. shared mailboxes or if same uid is used for multiple accounts).
+verbose_proctitle = yes
+
+# Enable installed protocols
+!include_try /usr/share/dovecot/protocols.d/*.protocol
+
+# Enable the dict server process so that all access to key-value stores are proxied through it
+service dict {
+    # If dict proxy is used, mail processes should have access to its socket.
+    # For example: mode=0660, group=vmail and global mail_access_groups=vmail
+    unix_listener dict {
+        #mode = 0600
+        #user =
+        #group =
+    }
+}
+
+
+
+<%= if config.imap.enable do %>
+<% Logger.debug "enabling dovecot imap functionality" %>
+##
+## IMAP specific settings
+##
+
+# What happens when FETCH fails due to some internal error:
+#   disconnect-immediately:
+#     The FETCH is aborted immediately and the IMAP client is disconnected.
+#   disconnect-after:
+#     The FETCH runs for all the requested mails returning as much data as
+#     possible. The client is finally disconnected without a tagged reply.
+#   no-after:
+#     Same as disconnect-after, but tagged NO reply is sent instead of
+#     disconnecting the client. If the client attempts to FETCH the same failed
+#     mail more than once, the client is disconnected. This is to avoid clients
+#     from going into infinite loops trying to FETCH a broken mail.
+imap_fetch_failure = disconnect-after
+
+protocol imap {
+  # Space separated list of plugins to load (default is global mail_plugins).
+  mail_plugins = $mail_plugins <%= if config.imap.enable_sieve do %>imap_sieve<% end %>
+
+  # Maximum number of IMAP connections allowed for a user from each IP address.
+  # NOTE: The username is compared case-sensitively.
+  mail_max_userip_connections = 20
+}
+
+service imap {
+  # Most of the memory goes to mmap()ing files. You may need to increase this
+  # limit if you have huge mailboxes.
+  #vsz_limit = $default_vsz_limit
+
+  # Max. number of IMAP processes (connections)
+  #process_limit = 1024
+}
+
+service imap-login {
+  <%= if Enum.member?(config.imap.listeners, "imap") do %>
+  inet_listener imap {
+    port = 143
+  }
+  <% end %>
+  <%= if Enum.member?(config.imap.listeners, "imaps") do %>
+  inet_listener imaps {
+    port = 993
+    ssl = yes
+  }
+  <% end %>
+
+  # Number of connections to handle before starting a new process. Typically
+  # the only useful values are 0 (unlimited) or 1. 1 is more secure, but 0
+  # is faster. <doc/wiki/LoginProcess.txt>
+  #service_count = 1
+
+  # Number of processes to always keep waiting for more connections.
+  process_min_avail = 1
+
+  # If you set service_count=0, you probably need to grow this.
+  #vsz_limit = $default_vsz_limit
+}
+<% else %>
+<% Logger.debug "disabling dovecot imap functionality" %>
+# IMAP is disabled
+<% end %>
+
+
+
+##
+## LDA specific settings (also used by LMTP)
+##
+
+# Address to use when sending rejection mails.
+# Default is postmaster@%d. %d expands to recipient domain.
+postmaster_address = <%= config.postmaster_address %>
+
+# Hostname to use in various parts of sent mails (e.g. in Message-Id) and
+# in LMTP replies. Default is the system's real hostname@domain.
+hostname = <%= config.hostname %>
+
+# If user is over quota, return with temporary failure instead of
+# bouncing the mail.
+#quota_full_tempfail = no
+
+# Binary to use for sending mails.
+#sendmail_path = /usr/sbin/sendmail
+
+# If non-empty, send mails via this SMTP host[:port] instead of sendmail.
+#submission_host =
+
+# Subject: header to use for rejection mails. You can use the same variables
+# as for rejection_reason below.
+#rejection_subject = Rejected: %s
+
+# Human readable error message for rejection mails. You can use variables:
+#  %n = CRLF, %r = reason, %s = original subject, %t = recipient
+#rejection_reason = Your message to %t was automatically rejected:%n%r
+
+# Delimiter character between local-part and detail in email address.
+recipient_delimiter = +
+
+# Header where the original recipient address (SMTP's RCPT TO: address) is taken
+# from if not available elsewhere. With dovecot-lda -a parameter overrides this.
+# A commonly used header for this is X-Original-To.
+#lda_original_recipient_header =
+
+# Should saving a mail to a nonexistent mailbox automatically create it?
+#lda_mailbox_autocreate = no
+
+# Should automatically created mailboxes be also automatically subscribed?
+#lda_mailbox_autosubscribe = no
+
+protocol lda {
+  # Space separated list of plugins to load (default is global mail_plugins).
+  mail_plugins = $mail_plugins <%= if config.imap.enable_sieve do %>sieve<% end %>
+}
+
+
+
+
+##
+## LMTP specific settings
+##
+
+# Support proxying to other LMTP/SMTP servers by performing passdb lookups.
+#lmtp_proxy = no
+
+# When recipient address includes the detail (e.g. user+detail), try to save
+# the mail to the detail mailbox. See also recipient_delimiter and
+# lda_mailbox_autocreate settings.
+#lmtp_save_to_detail_mailbox = no
+
+# Verify quota before replying to RCPT TO. This adds a small overhead.
+#lmtp_rcpt_check_quota = no
+
+# Which recipient address to use for Delivered-To: header and Received:
+# header. The default is "final", which is the same as the one given to
+# RCPT TO command. "original" uses the address given in RCPT TO's ORCPT
+# parameter, "none" uses nothing. Note that "none" is currently always used
+# when a mail has multiple recipients.
+#lmtp_hdr_delivery_address = final
+
+protocol lmtp {
+  # Space separated list of plugins to load (default is global mail_plugins).
+  mail_plugins = $mail_plugins <%= if config.imap.enable_sieve do %>sieve<% end %>
+}
+
+service lmtp {
+  unix_listener lmtp {
+    mode = 0666
+  }
+
+  # put an lmtp socket into postfix's working directory so that postfix can deliver mail to dovecot
+  unix_listener /var/spool/postfix/private/dovecot-lmtp {
+   group = postfix
+   user = postfix
+   mode = 0600
+  }
+}
+
+
+
+##
+## Authentication processes
+##
+
+# Disable LOGIN command and all other plaintext authentications unless
+# SSL/TLS is used (LOGINDISABLED capability). Note that if the remote IP
+# matches the local IP (ie. you're connecting from the same computer), the
+# connection is considered secure and plaintext authentication is allowed.
+# See also ssl=required setting.
+disable_plaintext_auth = yes
+
+# Space separated list of wanted authentication mechanisms:
+#   plain login digest-md5 cram-md5 ntlm rpa apop anonymous gssapi otp skey
+#   gss-spnego
+# NOTE: See also disable_plaintext_auth setting.
+auth_mechanisms = plain login
+
+
+
+
+##
+## Password and user databases
+##
+
+#
+# Password database is used to verify user's password (and nothing more).
+# You can have multiple passdbs and userdbs. This is useful if you want to
+# allow both system users (/etc/passwd) and virtual users to login without
+# duplicating the system users into virtual database.
+#
+# <doc/wiki/PasswordDatabase.txt>
+#
+# User database specifies where mails are located and what user/group IDs
+# own them. For single-UID configuration use "static" userdb.
+#
+# <doc/wiki/UserDatabase.txt>
+
+#passdb {
+#  driver = passwd-file
+#  args = /app/conf/dovecot-extra.passwd
+#}
+
+passdb {
+    driver = oauth2
+    mechanisms = plain login
+    args = /etc/dovecot/dovecot-oauth2.conf.ext
+    skip = authenticated
+}
+
+userdb {
+    driver = static
+    args = allow_all_users=yes
+}
+
+
+auth_username_format = %n
+
+service auth {
+  # auth_socket_path points to this userdb socket by default. It's typically
+  # used by dovecot-lda, doveadm, possibly imap process, etc. Users that have
+  # full permissions to this socket are able to get a list of all usernames and
+  # get the results of everyone's userdb lookups.
+  #
+  # The default 0666 mode allows anyone to connect to the socket, but the
+  # userdb lookups will succeed only if the userdb returns an "uid" field that
+  # matches the caller process's UID. Also if caller's uid or gid matches the
+  # socket's uid or gid the lookup succeeds. Anything else causes a failure.
+  #
+  # To give the caller full permissions to lookup all users, set the mode to
+  # something else than 0666 and Dovecot lets the kernel enforce the
+  # permissions (e.g. 0777 allows everyone full permissions).
+  unix_listener auth-userdb {
+    #mode = 0666
+    #user =
+    #group =
+  }
+
+  # Postfix smtp-auth
+  unix_listener /var/spool/postfix/private/dovecot-auth {
+    mode = 0666
+	  user = postfix
+	  group = postfix
+  }
+
+  # Auth process is run as this user.
+  #user = $default_internal_user
+}
+
+service auth-worker {
+  # Auth worker process is run as root by default, so that it can access
+  # /etc/shadow. If this isn't necessary, the user should be changed to
+  # $default_internal_user.
+  user = $default_internal_user
+}
+
+
+
+##
+## Mailbox locations and namespaces
+##
+
+# Location for users' mailboxes. The default is empty, which means that Dovecot
+# tries to find the mailboxes automatically. This won't work if the user
+# doesn't yet have any mail, so you should explicitly tell Dovecot the full
+# location.
+#
+# If you're using mbox, giving a path to the INBOX file (eg. /var/mail/%u)
+# isn't enough. You'll also need to tell Dovecot where the other mailboxes are
+# kept. This is called the "root mail directory", and it must be the first
+# path given in the mail_location setting.
+#
+# There are a few special variables you can use, eg.:
+#
+#   %u - username
+#   %n - user part in user@domain, same as %u if there's no domain
+#   %d - domain part in user@domain, empty if there's no domain
+#   %h - home directory
+#
+# See doc/wiki/Variables.txt for full list. Some examples:
+#
+#   mail_location = maildir:~/Maildir
+#   mail_location = mbox:~/mail:INBOX=/var/mail/%u
+#   mail_location = mbox:/var/mail/%d/%1n/%n:INDEX=/var/indexes/%d/%1n/%n
+#
+# <doc/wiki/MailLocation.txt>
+#
+mail_home = <%= config.storage_dir %>/mail/%n
+mail_location = maildir:%h
+
+# needed because the "active" sieve script is a non-directory file beginning with a dot
+# that is not normally supported by the maildir storage format and needs this workaround
+maildir_stat_dirs = yes
+
+# Each mailbox is specified in a separate mailbox section. The section name
+# specifies the mailbox name. If it has spaces, you can put the name
+# "in quotes". These sections can contain the following mailbox settings:
+#
+# auto:
+#   Indicates whether the mailbox with this name is automatically created
+#   implicitly when it is first accessed. The user can also be automatically
+#   subscribed to the mailbox after creation. The following values are
+#   defined for this setting:
+#
+#     no        - Never created automatically.
+#     create    - Automatically created, but no automatic subscription.
+#     subscribe - Automatically created and subscribed.
+#
+# special_use:
+#   A space-separated list of SPECIAL-USE flags (RFC 6154) to use for the
+#   mailbox. There are no validity checks, so you could specify anything
+#   you want in here, but it's not a good idea to use flags other than the
+#   standard ones specified in the RFC:
+#
+#     \All      - This (virtual) mailbox presents all messages in the
+#                 user's message store.
+#     \Archive  - This mailbox is used to archive messages.
+#     \Drafts   - This mailbox is used to hold draft messages.
+#     \Flagged  - This (virtual) mailbox presents all messages in the
+#                 user's message store marked with the IMAP \Flagged flag.
+#     \Junk     - This mailbox is where messages deemed to be junk mail
+#                 are held.
+#     \Sent     - This mailbox is used to hold copies of messages that
+#                 have been sent.
+#     \Trash    - This mailbox is used to hold messages that have been
+#                 deleted.
+#
+# comment:
+#   Defines a default comment or note associated with the mailbox. This
+#   value is accessible through the IMAP METADATA mailbox entries
+#   "/shared/comment" and "/private/comment". Users with sufficient
+#   privileges can override the default value for entries with a custom
+#   value.
+
+namespace inbox {
+  type = private
+  inbox = yes
+
+  mailbox Drafts {
+    special_use = \Drafts
+	  auto = subscribe
+  }
+  mailbox Junk {
+    special_use = \Junk
+	  auto = create
+  }
+  mailbox Trash {
+    special_use = \Trash
+	  auto = subscribe
+  }
+  mailbox Sent {
+    special_use = \Sent
+	  auto = subscribe
+  }
+  mailbox Archive {
+    special_use = \Archive
+    auto = subscribe
+  }
+}
+
+# System user and group used to access mails. If you use multiple, userdb
+# can override these by returning uid or gid fields. You can use either numbers
+# or names. <doc/wiki/UserIds.txt>
+mail_uid = mail
+mail_gid = mail
+
+first_valid_uid = 8
+first_valid_gid = 8
+last_valid_uid = 8
+last_valid_gid = 8
+
+# Group to enable temporarily for privileged operations. Currently this is
+# used only with INBOX when either its initial creation or dotlocking fails.
+# Typically this is set to "mail" to give access to /var/mail.
+mail_privileged_group = mail
+
+# Grant access to these supplementary groups for mail processes. Typically
+# these are used to set up access to shared mailboxes. Note that it may be
+# dangerous to set these if users can create symlinks (e.g. if "mail" group is
+# set here, ln -s /var/mail ~/mail/var could allow a user to delete others'
+# mailboxes, or ln -s /secret/shared/box ~/mail/mybox would allow reading it).
+#mail_access_groups =
+
+# A comment or note that is associated with the server. This value is
+# accessible for authenticated users through the IMAP METADATA server
+# entry "/shared/comment". 
+#mail_server_comment = ""
+
+# Indicates a method for contacting the server administrator. According to
+# RFC 5464, this value MUST be a URI (e.g., a mailto: or tel: URL), but that
+# is currently not enforced. Use for example mailto:admin@example.com. This
+# value is accessible for authenticated users through the IMAP METADATA server
+# entry "/shared/admin".
+mail_server_admin = mailto:$postmaster_address
+
+
+
+##
+## Mail processes
+##
+
+# Don't use mmap() at all. This is required if you store indexes to shared
+# filesystems (NFS or clustered filesystem).
+mmap_disable = yes
+
+# Space separated list of plugins to load for all services. Plugins specific to
+# IMAP, LDA, etc. are added to this list in their own .conf files.
+#mail_plugins =
+
+
+
+##
+## SSL settings
+##
+
+# SSL/TLS support: yes, no, required. <doc/wiki/SSL.txt>
+ssl = yes
+
+# PEM encoded X.509 SSL/TLS certificate and private key. They're opened before
+# dropping root privileges, so keep the key file unreadable by anyone but
+# root. Included doc/mkcert.sh can be used to easily generate self-signed
+# certificate, just make sure to update the domains in dovecot-openssl.cnf
+ssl_cert = <<%= config.tls.certificate %>
+ssl_key = <<%= config.tls.private_key %>
+
+# PEM encoded trusted certificate authority. Set this only if you intend to use
+# ssl_verify_client_cert=yes. The file should contain the CA certificate(s)
+# followed by the matching CRL(s). (e.g. ssl_ca = </etc/ssl/certs/ca.pem)
+#ssl_ca =
+
+# Directory and/or file for trusted SSL CA certificates. These are used only
+# when Dovecot needs to act as an SSL client (e.g. imapc backend or
+# submission service). The directory is usually /etc/ssl/certs in
+# Debian-based systems and the file is /etc/pki/tls/cert.pem in
+# RedHat-based systems.
+ssl_client_ca_dir = /etc/ssl/certs
+
+# SSL DH parameters
+# Generate new params with `openssl dhparam -out /etc/dovecot/dh.pem 4096`
+# Or migrate from old ssl-parameters.dat file with the command dovecot
+# gives on startup when ssl_dh is unset.
+ssl_dh = </usr/share/dovecot/dh.pem
+
+# Minimum SSL protocol version to use. Potentially recognized values are SSLv3,
+# TLSv1, TLSv1.1, and TLSv1.2, depending on the OpenSSL version used.
+ssl_min_protocol = TLSv1.2
+
+# SSL ciphers to use
+ssl_cipher_list = ALL:!DH:!kRSA:!SRP:!kDHd:!DSS:!aNULL:!eNULL:!EXPORT:!DES:!3DES:!MD5:!PSK:!RC4:!ADH:!LOW@STRENGTH
+
+# Colon separated list of elliptic curves to use. Empty value (the default)
+# means use the defaults from the SSL library. P-521:P-384:P-256 would be an
+# example of a valid value.
+#ssl_curve_list =
+
+# Prefer the server's order of ciphers over client's.
+ssl_prefer_server_ciphers = yes
+
+
+
+
+
+
+<%= if config.extra.dovecot != "" do %>
+<% Logger.debug "including additional raw content into dovecot config: #{config.extra.dovecot}" %>
+##
+## User Extension
+##
+<%= config.extra.dovecot %>
+<% end %>

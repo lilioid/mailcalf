@@ -9,7 +9,28 @@ import Config
 
 config :mailcalf,
   ecto_repos: [Mailcalf.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime],
+  mailserver: %{
+    postmaster_address: "postmaster@ftsell.de",
+    hostname: "example.localhost",
+    storage_dir: "/usr/local/src/mailcalf/dev_storage",
+    tls: %{},
+    imap: %{
+      enable: true,
+      enable_sieve: true,
+      enable_managesieve: true,
+      listeners: ["imap"]
+    },
+    oauth: %{
+      debug: false,
+      grant_url: "https://example.com/token",
+      introspection_url: "https://example.com/introspect",
+      client_id: "example-client",
+      client_secret: "foobar123",
+      username_attribute: "preferred_username",
+    },
+    extra: %{},
+  }
 
 # Configures the endpoint
 config :mailcalf, MailcalfWeb.Endpoint,

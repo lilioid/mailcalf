@@ -1,4 +1,0 @@
-userdb {
-    driver = static
-    args = allow_all_users=yes
-}

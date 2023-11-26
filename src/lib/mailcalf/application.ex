@@ -10,6 +10,7 @@ defmodule Mailcalf.Application do
     children = [
       MailcalfWeb.Telemetry,
       Mailcalf.Repo,
+      Mailcalf.Dovecot,
       {Ecto.Migrator,
         repos: Application.fetch_env!(:mailcalf, :ecto_repos),
         skip: skip_migrations?()},
