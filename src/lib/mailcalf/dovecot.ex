@@ -15,7 +15,7 @@ defmodule Mailcalf.Dovecot do
 
   @impl true
   def init(_init_arg = []) do
-    Mailcalf.Dovecot.Config.render_config_files()
+    Mailcalf.Dovecot.Config.write_config_files()
     port = Mailcalf.Dovecot.Process.start_dovecot()
     monitor = Port.monitor(port)
     {:ok, [port: port, monitor: monitor]}
@@ -30,19 +30,27 @@ defmodule Mailcalf.Dovecot do
   # Server API handlers
 
   @impl true
-  def handle_cast({:reconfigure}, [port: port]) do
+  def handle_cast({:reconfigure}, [port: port, monitor: monitor]) do
+    Port.demonitor(monitor)
     Mailcalf.Dovecot.Process.stop_dovecot(port)
-    Mailcalf.Dovecot.Config.render_config_files()
+    Mailcalf.Dovecot.Config.write_config_files()
     port = Mailcalf.Dovecot.Process.start_dovecot()
     monitor = Port.monitor(port)
     {:noreply, [port: port, monitor: monitor]}
   end
 
+  # A handler for when the port monitor detects that the dovecot process has quit
   @impl true
   def handle_info({:DOWN, monitor, :port, port, reason}, [port: port, monitor: monitor]) do
     Logger.error("dovecot has quit unexpectedly", [reason: reason])
     Port.demonitor(monitor)
     {:stop, :dovecot_quit, []}
+  end
+
+  # A handler for when dovecot sends messages on stdout
+  def handle_info({_src, {:data, msg}}, state) do
+    IO.puts(msg)
+    {:noreply, state}
   end
 
   # Client API

@@ -17,8 +17,6 @@ config :mailcalf,
     tls: %{},
     imap: %{
       enable: true,
-      enable_sieve: true,
-      enable_managesieve: true,
       listeners: ["imap"]
     },
     oauth: %{

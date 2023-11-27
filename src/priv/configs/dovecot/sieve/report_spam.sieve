@@ -4,4 +4,4 @@ if environment :matches "imap.user" "*" {
   set "username" "${1}";
 }
 
-pipe :copy "rspamd-learn-spam.sh" [ "${username}" ];
+pipe :copy "rspamd_learn_spam.sh" [ "${username}" ];

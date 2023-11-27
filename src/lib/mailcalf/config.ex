@@ -23,14 +23,12 @@ defmodule Mailcalf.Config do
     @primary_key false
     embedded_schema do
       field :enable, :boolean
-      field :enable_sieve, :boolean
-      field :enable_managesieve, :boolean
       field :listeners, {:array, :string}
     end
 
     def changeset(data, changes) do
       data
-      |> cast(changes, [:enable, :enable_sieve, :enable_managesieve, :listeners])
+      |> cast(changes, [:enable, :listeners])
       |> validate_subset(:listeners, ["imap", "imaps"])
     end
   end

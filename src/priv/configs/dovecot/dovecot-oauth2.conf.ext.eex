@@ -1,0 +1,11 @@
+debug = <%= case config.oauth.debug do
+    true -> "no"
+    false -> "yes"
+end %>
+grant_url = <%= config.oauth.grant_url %>
+introspection_url = <%= config.oauth.introspection_url %>
+client_id = <%= config.oauth.client_id %>
+client_secret = <%= config.oauth.client_secret %>
+introspection_mode = post
+use_grant_password = yes
+username_attribute = <%= config.oauth.username_attribute %>
