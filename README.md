@@ -50,6 +50,11 @@ This mailserver accepts the following configurations
 
   [Postfix Documentation](http://www.postfix.org/postconf.5.html#smtpd_sender_login_maps)
 
+- `/app/conf/postfix_recipient_access.txt`
+  A lookup table from which postfix determines specific actions that it performs depending on the resolved recipient address.
+
+  [Postfix Documentation](http://www.postfix.org/access.5.html)
+
 - `/app/conf/rspamd_worker_controller.inc`
   Incrementally applied configuration file for *rspamd*.
 

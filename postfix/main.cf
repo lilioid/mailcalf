@@ -81,7 +81,10 @@ smtpd_helo_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_i
 smtpd_sender_restrictions = reject_unknown_sender_domain, reject_authenticated_sender_login_mismatch
 
 # require that the destination is on this server or the user is authenticated
-smtpd_recipient_restrictions = permit_sasl_authenticated, reject_unauth_destination
+# also allow configuration of specific actions for some recipients
+smtpd_recipient_restrictions = permit_sasl_authenticated,
+    reject_unauth_destination,
+    check_recipient_access hash:/etc/postfix/recipient_access
 
 # require authentication to use smtp pipelining
 smtpd_data_restrictions = reject_unauth_pipelining
