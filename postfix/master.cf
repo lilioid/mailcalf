@@ -12,6 +12,8 @@
 
 # listeners on port 25/tcp
 smtp      inet  n       -       n       -       1       postscreen
+26        inet  n       -       n       -       1       postscreen
+  -o postscreen_upstream_proxy_protocol=haproxy
 smtpd     pass  -       -       n       -       -       smtpd
 smtp      unix  n       -       n       -       -       smtpd
   -o smtpd_sasl_auth_enable=no
