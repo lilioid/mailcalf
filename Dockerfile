@@ -34,12 +34,15 @@ COPY opendkim/ /etc/opendkim
 # configure image metadata
 # smtp
 EXPOSE 25/tcp
+EXPOSE 26/tcp
 # submission
 EXPOSE 587/tcp
 # imap
 EXPOSE 993/tcp
 # rspamd admin interface
 EXPOSE 11334/tcp
+# sieve-manager
+EXPOSE 4190/tcp
 VOLUME /app/conf
 VOLUME /app/ssl
 VOLUME /app/mail

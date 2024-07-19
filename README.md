@@ -1,6 +1,17 @@
 # Dockerized Mailserver
 
-This mailserver accepts the following configurations
+**Exposed Ports**
+
+| Port | Service | Description |
+|:----:|---------|-------------|
+| 25   | SMTP    | Requires no authentication but is under heavy restrictions regarding the senders that are accepted based on spam protection heuristics |
+| 26   | SMTP    | Same as above but expects a PROXY-Protocol header |
+| 587  | Submission | Mail submission port for users. Basically SMTP but STARTTLS as well as authentication are always required |
+| 993  | Imap    | Used for retrieving mails and managing mailboxes |
+| 4190 | sieve-manage | Management port for sieve-scripts |
+| 11334 | rspamd | HTTP server of the rspamd admin interface |
+
+**Config Files**
 
 - `/app/conf/dovecot_local.conf`
   A dovecot configuration file that is automatically included at the end of the container's configuration.
