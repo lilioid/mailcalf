@@ -1,0 +1,33 @@
+steps:
+  - name: build container image
+    when:
+      - event: push
+      - event: cron
+      - event: manual
+    image: quay.io/containers/podman
+    privileged: true
+    secrets: [ "FORGEJO_PACKAGES_ACCESS", "GITHUB_PACKAGES_ACCESS" ]
+    commands:
+      - podman build . -t mailcalf
+      - podman save -o mailcalf.tar mailcalf
+
+  - name: publish container image
+    when:
+      - event: manual
+        branch: main
+      - event: push
+        branch: main
+      - event: cron
+        cron: periodic-rebuild
+    image: quay.io/containers/podman
+    secrets: [ "FORGEJO_PACKAGES_ACCESS", "GITHUB_PACKAGES_ACCESS" ]
+    commands:
+      - podman load -i mailcalf.tar
+      - |
+        podman login git.lly.sh -u ftsell -p $FORGEJO_PACKAGES_ACCESS
+        podman tag mailcalf git.lly.sh/ftsell/mailcalf
+        podman push git.lly.sh/ftsell/mailcalf
+      - |
+        podman login ghcr.io -u ftsell -p $GITHUB_PACKAGES_ACCESS
+        podman tag mailcalf ghcr.io/ftsell/mailcalf
+        podman push ghcr.io/ftsell/mailcalf
