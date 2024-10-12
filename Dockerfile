@@ -1,4 +1,4 @@
-FROM docker.io/debian:11-slim
+FROM docker.io/debian:12-slim
 
 # install required software
 ENV DEBIAN_FRONTEND=noninteractive
