@@ -19,15 +19,8 @@ steps:
         branch: main
       - event: cron
         cron: periodic-rebuild
-    image: quay.io/containers/podman
+    image: quay.io/containers/skopeo
     secrets: [ "FORGEJO_PACKAGES_ACCESS", "GITHUB_PACKAGES_ACCESS" ]
     commands:
-      - podman load -i mailcalf.tar
-      - |
-        podman login git.lly.sh -u ftsell -p $FORGEJO_PACKAGES_ACCESS
-        podman tag mailcalf git.lly.sh/ftsell/mailcalf
-        podman push git.lly.sh/ftsell/mailcalf
-      - |
-        podman login ghcr.io -u ftsell -p $GITHUB_PACKAGES_ACCESS
-        podman tag mailcalf ghcr.io/ftsell/mailcalf
-        podman push ghcr.io/ftsell/mailcalf
+      - skopeo copy --dest-username ftsell --dest-password $FORGEJO_PACKAGES_ACCESS docker-archive:mailcalf.tar docker://git.lly.sh/ftsell/mailcalf
+      - skopeo copy --dest-username ftsell --dest-password $GITHUB_PACKAGES_ACCESS docker-archive:mailcalf.tar docker://ghcr.io/ftsell/mailcalf
